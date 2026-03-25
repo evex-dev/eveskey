@@ -33,7 +33,9 @@ jobs:
       - name: Check if branch already exists
         id: check
         run: |
-          if git ls-remote --exit-code origin "refs/heads/upstream/${{ steps.upstream.outputs.tag }}" > /dev/null 2>&1; then
+          if gh pr list -R ${{ github.repository }} --json isCrossRepository --state all --base develop --head upstream/${{ steps.upstream.outputs.tag }} | \
+              jq -e '.[] | select(.isCrossRepository == false)' > /dev/null 2>&1
+          then
             echo "exists=true" >> $GITHUB_OUTPUT
           else
             echo "exists=false" >> $GITHUB_OUTPUT
