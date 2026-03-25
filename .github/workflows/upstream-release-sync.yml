@@ -22,7 +22,7 @@ jobs:
           tag=$(gh release view --repo misskey-dev/misskey --json tagName --jq '.tagName')
           echo "tag=$tag" >> "$GITHUB_OUTPUT"
 
-      - name: Check if branch already exists
+      - name: Check if PR already exists
         id: check
         run: |
           if gh pr list --repo ${{ github.repository }} --json isCrossRepository --state all --base develop --head upstream/${{ steps.upstream.outputs.tag }} | \
