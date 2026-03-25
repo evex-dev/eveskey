@@ -21,6 +21,9 @@ jobs:
         run: |
           tag=$(gh release view --repo misskey-dev/misskey --json tagName --jq '.tagName')
           echo "tag=$tag" >> "$GITHUB_OUTPUT"
+        env:
+          GH_TOKEN: ${{ github.token }}
+
 
       - name: Check if PR already exists
         id: check
@@ -32,6 +35,8 @@ jobs:
           else
             echo "exists=false" >> $GITHUB_OUTPUT
           fi
+        env:
+          GH_TOKEN: ${{ github.token }}
 
       - name: Setup git repository
         if: steps.check.outputs.exists == 'false'
