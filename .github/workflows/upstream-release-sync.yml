@@ -5,6 +5,9 @@ on:
     - cron: '0 * * * *'
   workflow_dispatch:
 
+concurrency:
+  group: upstream-release-sync
+
 permissions:
   contents: write
   pull-requests: write
