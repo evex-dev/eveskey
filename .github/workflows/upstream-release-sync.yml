@@ -26,14 +26,10 @@ jobs:
           fi
           echo "tag=$tag" >> "$GITHUB_OUTPUT"
 
-      - uses: actions/checkout@v6.0.2
-        with:
-          fetch-depth: 0
-
       - name: Check if branch already exists
         id: check
         run: |
-          if gh pr list -R ${{ github.repository }} --json isCrossRepository --state all --base develop --head upstream/${{ steps.upstream.outputs.tag }} | \
+          if gh pr list --repo ${{ github.repository }} --json isCrossRepository --state all --base develop --head upstream/${{ steps.upstream.outputs.tag }} | \
               jq -e '.[] | select(.isCrossRepository == false)' > /dev/null 2>&1
           then
             echo "exists=true" >> $GITHUB_OUTPUT
@@ -41,36 +37,33 @@ jobs:
             echo "exists=false" >> $GITHUB_OUTPUT
           fi
 
-      - name: Setup git
+      - name: Setup git repository
         if: steps.check.outputs.exists == 'false'
         run: |
+          git init --bare
           git config user.name "github-actions[bot]"
-          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git remote add origin https://github.com/${{ github.repository }}.git
+          git fetch --filter=blob:none origin develop
 
       - name: Add upstream remote and fetch tag
         if: steps.check.outputs.exists == 'false'
         run: |
           git remote add upstream https://github.com/misskey-dev/misskey.git
           git fetch upstream tag "${{ steps.upstream.outputs.tag }}" --no-tags
-          if ! git rev-parse "refs/tags/${{ steps.upstream.outputs.tag }}" > /dev/null 2>&1; then
-            echo "::error::Tag ${{ steps.upstream.outputs.tag }} was not found after fetching upstream."
-            exit 1
-          fi
 
       - name: Create and push branch
         if: steps.check.outputs.exists == 'false'
-        run: |
-          git checkout -b "upstream/${{ steps.upstream.outputs.tag }}" "refs/tags/${{ steps.upstream.outputs.tag }}"
-          git push origin "upstream/${{ steps.upstream.outputs.tag }}"
+        run: git push origin "refs/tags/${{ steps.upstream.outputs.tag }}:refs/heads/upstream/${{ steps.upstream.outputs.tag }}"
 
       - name: Create PR
         if: steps.check.outputs.exists == 'false'
         run: |
           body=$(gh release view "${{ steps.upstream.outputs.tag }}" --repo misskey-dev/misskey --json body --jq '.body')
-          if [ -z "$body" ] || [ "$body" = "null" ]; then
+          if [[ -z "$body" ]]; then
             body="Sync upstream release: ${{ steps.upstream.outputs.tag }}"
           fi
-          printf '%s' "$body" > /tmp/pr-body.txt
+          echo "$body" > /tmp/pr-body.txt
           gh pr create \
             --title "upstream: ${{ steps.upstream.outputs.tag }}" \
             --body-file /tmp/pr-body.txt \
