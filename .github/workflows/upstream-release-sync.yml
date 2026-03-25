@@ -64,7 +64,7 @@ jobs:
         if: steps.check.outputs.exists == 'false'
         run: |
           body=$(gh release view "${{ steps.upstream.outputs.tag }}" --repo misskey-dev/misskey --json body --jq '.body')
-          if [ -z "$body" ]; then
+          if [ -z "$body" ] || [ "$body" = "null" ]; then
             body="Sync upstream release: ${{ steps.upstream.outputs.tag }}"
           fi
           printf '%s' "$body" > /tmp/pr-body.txt
