@@ -20,10 +20,6 @@ jobs:
         id: upstream
         run: |
           tag=$(gh release view --repo misskey-dev/misskey --json tagName --jq '.tagName')
-          if [ -z "$tag" ] || [ "$tag" = "null" ]; then
-            echo "::error::Failed to resolve a valid upstream release tag (got '${tag:-<empty>}')."
-            exit 1
-          fi
           echo "tag=$tag" >> "$GITHUB_OUTPUT"
 
       - name: Check if branch already exists
