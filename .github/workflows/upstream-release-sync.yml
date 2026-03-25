@@ -24,7 +24,6 @@ jobs:
         env:
           GH_TOKEN: ${{ github.token }}
 
-
       - name: Check if PR already exists
         id: check
         run: |
