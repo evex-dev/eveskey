@@ -39,7 +39,7 @@ jobs:
           git init --bare
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
-          git remote add origin https://github.com/${{ github.repository }}.git
+          git remote add origin https://x-access-token:${{ github.token }}@github.com/${{ github.repository }}.git
           git fetch --filter=blob:none origin develop
 
       - name: Add upstream remote and fetch tag
