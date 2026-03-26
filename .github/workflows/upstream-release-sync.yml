@@ -21,6 +21,7 @@ jobs:
       - name: Setup GitHub CLI
         run: |
           git init --bare
+          git remote add origin https://github.com/${{ github.repository }}.git
           gh repo set-default ${{ github.repository }}
         env:
           GH_TOKEN: ${{ steps.app-token.outputs.token }}
@@ -52,11 +53,9 @@ jobs:
         env:
           GH_TOKEN: ${{ steps.app-token.outputs.token }}
 
-      - name: Setup git repository
+      - name: Sync from origin
         if: steps.check.outputs.exists == 'false'
-        run: |
-          git remote add origin https://github.com/${{ github.repository }}.git
-          git fetch --filter=blob:none origin develop
+        run: git fetch --filter=blob:none origin develop
 
       - name: Add upstream remote and fetch tag
         if: steps.check.outputs.exists == 'false'
