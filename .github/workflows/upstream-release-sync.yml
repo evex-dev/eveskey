@@ -12,14 +12,16 @@ jobs:
   sync:
     runs-on: ubuntu-latest
     steps:
-      - name: Setup GitHub CLI
-        run: gh repo set-default ${{ github.repository }}
-
       - uses: actions/create-github-app-token@v3
         id: app-token
         with:
           app-id: ${{ secrets.SYNC_AGENT_APP_ID }}
           private-key: ${{ secrets.SYNC_AGENT_PRIVATE_KEY }}
+
+      - name: Setup GitHub CLI
+        run: gh repo set-default ${{ github.repository }}
+        env:
+          GH_TOKEN: ${{ steps.app-token.outputs.token }}
 
       - name: Get latest upstream release
         id: upstream
