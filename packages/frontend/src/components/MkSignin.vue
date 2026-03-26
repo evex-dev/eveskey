@@ -12,7 +12,7 @@ SPDX-License-Identifier: AGPL-3.0-only
 			</div>
 			<div :class="$style.title">{{ i18n.ts.evexAccount.title }}</div>
 		</div>
-		<MkButton gradate rounded large :disabled="waiting" @click="onEvexAccountLogin" style="width: 100%;">
+		<MkButton gradate rounded large :disabled="waiting" style="width: 100%;" @click="onEvexAccountLogin">
 			<template v-if="waiting && doingEvexLogin">
 				<MkLoading :em="true" :colored="false"/>
 			</template>
