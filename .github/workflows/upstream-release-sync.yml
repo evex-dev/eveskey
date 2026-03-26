@@ -21,7 +21,7 @@ jobs:
       - name: Setup GitHub CLI
         run: |
           git init --bare
-          git remote add origin https://github.com/${{ github.repository }}.git
+          git remote add origin https://x-access-token:${{ steps.app-token.outputs.token }}@github.com/${{ github.repository }}.git
           gh repo set-default ${{ github.repository }}
         env:
           GH_TOKEN: ${{ steps.app-token.outputs.token }}
