@@ -1833,6 +1833,7 @@ declare namespace entities {
         EndpointRequest,
         EndpointResponse,
         EndpointsResponse,
+        EvexAccountCompleteRequest,
         FederationFollowersRequest,
         FederationFollowersResponse,
         FederationFollowingRequest,
@@ -2247,6 +2248,9 @@ export { entities }
 
 // @public (undocumented)
 type Error_2 = components['schemas']['Error'];
+
+// @public (undocumented)
+type EvexAccountCompleteRequest = operations['evex-account___complete']['requestBody']['content']['application/json'];
 
 // @public (undocumented)
 type FederationFollowersRequest = operations['federation___followers']['requestBody']['content']['application/json'];
