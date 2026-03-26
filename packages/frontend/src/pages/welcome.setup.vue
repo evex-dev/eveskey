@@ -44,18 +44,33 @@ SPDX-License-Identifier: AGPL-3.0-only
 				</g>
 			</svg>
 			<div :class="$style.title">
-				<div>Eveskeyへようこそ!</div>
+				<div>Welcome to Misskey!</div>
 				<div :class="$style.version">v{{ version }}</div>
 			</div>
 			<div style="padding: 16px 32px 32px 32px;">
 				<form v-if="!accountCreated" class="_gaps_m" @submit.prevent="createAccount()">
 					<div style="text-align: center;" class="_gaps_s">
 						<div><b>{{ i18n.ts._serverSetupWizard.installCompleted }}</b></div>
-						<div>{{ i18n.ts.evexAccount.welcomeCreateIntro }}</div>
+						<div>{{ i18n.ts._serverSetupWizard.firstCreateAccount }}</div>
 					</div>
-					<MkButton gradate large rounded :disabled="accountCreating" data-cy-admin-ok style="margin: 0 auto;" type="submit">
-						{{ accountCreating ? i18n.ts.processing : i18n.ts.evexAccount.welcomeCreateButton }}<MkEllipsis v-if="accountCreating"/>
-					</MkButton>
+					<MkInput v-model="setupPassword" type="password" data-cy-admin-initial-password>
+						<template #label>{{ i18n.ts.initialPasswordForSetup }} <div v-tooltip:dialog="i18n.ts.initialPasswordForSetupDescription" class="_button _help"><i class="ti ti-help-circle"></i></div></template>
+						<template #prefix><i class="ti ti-lock"></i></template>
+					</MkInput>
+					<MkInput v-model="username" pattern="^[a-zA-Z0-9_]{1,20}$" :spellcheck="false" required data-cy-admin-username>
+						<template #label>{{ i18n.ts.username }} <div v-tooltip:dialog="i18n.ts.usernameInfo" class="_button _help"><i class="ti ti-help-circle"></i></div></template>
+						<template #prefix>@</template>
+						<template #suffix>@{{ host }}</template>
+					</MkInput>
+					<MkInput v-model="password" type="password" data-cy-admin-password>
+						<template #label>{{ i18n.ts.password }}</template>
+						<template #prefix><i class="ti ti-lock"></i></template>
+					</MkInput>
+					<div>
+						<MkButton gradate large rounded :disabled="accountCreating" data-cy-admin-ok style="margin: 0 auto;" type="submit">
+							{{ accountCreating ? i18n.ts.processing : i18n.ts.next }}<MkEllipsis v-if="accountCreating"/>
+						</MkButton>
+					</div>
 				</form>
 				<div v-else-if="step === 0" class="_gaps_m">
 					<div style="text-align: center;" class="_gaps_s">
@@ -110,34 +125,60 @@ SPDX-License-Identifier: AGPL-3.0-only
 
 <script lang="ts" setup>
 import { ref } from 'vue';
-import { version } from '@@/js/config.js';
+import { host, version } from '@@/js/config.js';
 import MkButton from '@/components/MkButton.vue';
-import MkEllipsis from '@/components/global/MkEllipsis.vue';
-import MkLink from '@/components/MkLink.vue';
-import MkLoading from '@/components/global/MkLoading.vue';
-import MkServerSetupWizard from '@/components/MkServerSetupWizard.vue';
-import PageWithAnimBg from '@/components/global/PageWithAnimBg.vue';
+import MkInput from '@/components/MkInput.vue';
+import * as os from '@/os.js';
+import { misskeyApi } from '@/utility/misskey-api.js';
 import { i18n } from '@/i18n.js';
-import { getAccountWithSignupDialog, login } from '@/accounts.js';
+import { login } from '@/accounts.js';
+import MkLink from '@/components/MkLink.vue';
+import MkServerSetupWizard from '@/components/MkServerSetupWizard.vue';
 
+const username = ref('');
+const password = ref('');
+const setupPassword = ref('');
 const accountCreating = ref(false);
 const accountCreated = ref(false);
 const step = ref(0);
+
 let token: string | null = null;
 
-async function createAccount() {
+function createAccount() {
 	if (accountCreating.value) return;
 	accountCreating.value = true;
 
-	try {
-		const res = await getAccountWithSignupDialog();
-		if (!res) return;
+	const _close = os.waiting();
 
+	misskeyApi('admin/accounts/create', {
+		username: username.value,
+		password: password.value,
+		setupPassword: setupPassword.value === '' ? null : setupPassword.value,
+	}).then(res => {
 		token = res.token;
 		accountCreated.value = true;
-	} finally {
+	}).catch((err) => {
 		accountCreating.value = false;
-	}
+
+		let title = i18n.ts.somethingHappened;
+		let text = err.message + '\n' + err.id;
+
+		if (err.code === 'ACCESS_DENIED') {
+			title = i18n.ts.permissionDeniedError;
+			text = i18n.ts.operationForbidden;
+		} else if (err.code === 'INCORRECT_INITIAL_PASSWORD') {
+			title = i18n.ts.permissionDeniedError;
+			text = i18n.ts.incorrectPassword;
+		}
+
+		os.alert({
+			type: 'error',
+			title,
+			text,
+		});
+	}).finally(() => {
+		_close();
+	});
 }
 
 function onWizardFinished() {
