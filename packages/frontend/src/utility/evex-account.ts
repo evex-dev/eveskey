@@ -54,7 +54,7 @@ export async function startEvexAccountFlow(): Promise<EvexAccountResponse | null
 			window.clearInterval(closeWatcher);
 		};
 
-		let closeWatcher = window.setInterval(() => {
+		const closeWatcher = window.setInterval(() => {
 			if (popup.closed) {
 				cleanup();
 				resolve(null);
