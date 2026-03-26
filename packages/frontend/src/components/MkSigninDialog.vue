@@ -12,7 +12,7 @@ SPDX-License-Identifier: AGPL-3.0-only
 >
 	<div :class="$style.root">
 		<div :class="$style.header">
-			<div :class="$style.headerText"><i class="ti ti-login-2"></i> {{ i18n.ts.login }}</div>
+			<div :class="$style.headerText"><i class="ti ti-login-2"></i> {{ i18n.ts.evexAccount.title }}</div>
 			<button :class="$style.closeButton" class="_button" @click="onClose"><i class="ti ti-x"></i></button>
 		</div>
 		<div :class="$style.content">

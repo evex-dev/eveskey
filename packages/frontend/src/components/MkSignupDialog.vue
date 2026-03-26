@@ -11,7 +11,7 @@ SPDX-License-Identifier: AGPL-3.0-only
 	@close="onClose"
 	@closed="emit('closed')"
 >
-	<template #header>{{ i18n.ts.signup }}</template>
+	<template #header>{{ i18n.ts.evexAccount.title }}</template>
 
 	<div style="overflow-x: clip;">
 		<Transition

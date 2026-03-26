@@ -18,7 +18,7 @@ SPDX-License-Identifier: AGPL-3.0-only
 		<div v-if="narrow && !isRoot" :class="$style.header">
 			<img :src="instance.iconUrl || '/favicon.ico'" alt="" :class="$style.headerIcon"/>
 			<MkA to="/" :class="$style.headerTitle">{{ instanceName }}</MkA>
-			<MkButton primary rounded :class="$style.headerButton" @click="goHome">{{ i18n.ts.signup }}</MkButton>
+			<MkButton primary rounded :class="$style.headerButton" @click="goHome">Home</MkButton>
 		</div>
 		<div :class="$style.content">
 			<RouterView/>
