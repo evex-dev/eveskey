@@ -65,10 +65,18 @@ jobs:
 
       - name: Create and push branch
         if: steps.check.outputs.exists == 'false'
-        run: git push origin "refs/tags/${{ steps.upstream.outputs.tag }}:refs/heads/upstream/${{ steps.upstream.outputs.tag }}"
+        id: branch
+        run: |
+          if git merge-base --is-ancestor ${{ steps.upstream.outputs.tag }} origin/develop; then
+            echo "develop branch is newer than tag:${{ steps.upstream.outputs.tag }}"
+            echo "newer=true" >> $GITHUB_OUTPUT
+            exit 0
+          fi
+
+          git push origin "refs/tags/${{ steps.upstream.outputs.tag }}:refs/heads/upstream/${{ steps.upstream.outputs.tag }}"
 
       - name: Create PR
-        if: steps.check.outputs.exists == 'false'
+        if: steps.branch.outputs.newer != 'true'
         run: |
           body=$(gh release view "${{ steps.upstream.outputs.tag }}" --repo misskey-dev/misskey --json body --jq '.body')
           if [[ -z "$body" ]]; then
