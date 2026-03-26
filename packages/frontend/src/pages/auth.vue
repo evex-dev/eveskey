@@ -33,7 +33,7 @@ SPDX-License-Identifier: AGPL-3.0-only
 			</div>
 		</div>
 		<div v-else>
-			<p :class="$style.loginMessage">{{ i18n.ts.evexAccount.authorizeMessage }}</p>
+			<p :class="$style.loginMessage">{{ i18n.ts._auth.pleaseLogin }}</p>
 			<MkSignin @login="onLogin"/>
 		</div>
 	</div>

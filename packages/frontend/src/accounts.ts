@@ -301,23 +301,23 @@ export async function getAccountMenu(opts: {
 
 		menuItems.push(...accountItems);
 
-				menuItems.push({
-					type: 'parent',
-					icon: 'ti ti-plus',
-					text: i18n.ts.addAccount,
-					children: [{
-						text: i18n.ts.evexAccount.signIn,
-						action: () => {
-							getAccountWithSigninDialog().then(res => {
-								if (res != null) {
+		menuItems.push({
+			type: 'parent',
+			icon: 'ti ti-plus',
+			text: i18n.ts.addAccount,
+			children: [{
+				text: i18n.ts.existingAccount,
+				action: () => {
+					getAccountWithSigninDialog().then(res => {
+						if (res != null) {
 							success();
 						}
 					});
 				},
-					}, {
-						text: i18n.ts.evexAccount.signUp,
-						action: () => {
-							getAccountWithSignupDialog().then(res => {
+			}, {
+				text: i18n.ts.createAccount,
+				action: () => {
+					getAccountWithSignupDialog().then(res => {
 						if (res != null) {
 							switchAccount(host, res.id);
 						}
