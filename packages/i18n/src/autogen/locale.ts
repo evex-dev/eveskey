@@ -152,6 +152,68 @@ export interface Locale extends ILocale {
      * 新規登録
      */
     "signup": string;
+    "evexAccount": {
+        /**
+         * EvexAccount
+         */
+        "title": string;
+        /**
+         * EvexAccountで追加
+         */
+        "addWith": string;
+        /**
+         * EvexAccountで続行
+         */
+        "signIn": string;
+        /**
+         * EvexAccountで作成
+         */
+        "signUp": string;
+        /**
+         * EvexAccountへ移動する
+         */
+        "goToSignup": string;
+        /**
+         * EvexAccountに登録すると、新しいMisskeyアカウントが作成されます。
+         */
+        "signupDescription": string;
+        /**
+         * このアカウントをEvexAccountで連携します。
+         */
+        "signInDescription": string;
+        /**
+         * このアプリを承認するにはEvexAccountで続行してください。
+         */
+        "authorizeMessage": string;
+        /**
+         * EvexAccountでサインインするか、リモートインスタンスで続行してください。
+         */
+        "signInOrContinue": string;
+        /**
+         * EvexAccountで初期アカウントを作ってください。
+         */
+        "welcomeCreateIntro": string;
+        /**
+         * EvexAccountで作る
+         */
+        "welcomeCreateButton": string;
+        /**
+         * EvexAccountを使ってリモートオプションを利用してください。
+         */
+        "pleaseLoginRemote": string;
+        /**
+         * 続行するにはEvexAccountでサインインしてください。
+         */
+        "pleaseLoginContinue": string;
+        /**
+         * EvexAccount認可の開始に失敗しました。
+         */
+        "errorStart": string;
+        /**
+         * EvexAccount認可の完了に失敗しました。
+         */
+        "errorComplete": string;
+    };
     /**
      * アップロード中
      */

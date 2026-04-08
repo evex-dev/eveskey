@@ -10,6 +10,7 @@ import * as endpointsObject from './endpoint-list.js';
 import { GetterService } from './GetterService.js';
 import { ApiLoggerService } from './ApiLoggerService.js';
 import type { Provider } from '@nestjs/common';
+import { EvexAccountService } from '../EvexAccountService.js';
 
 const endpoints = Object.entries(endpointsObject);
 const endpointProviders = endpoints.map(([path, endpoint]): Provider => ({ provide: `ep:${path}`, useClass: endpoint.default }));
@@ -19,11 +20,13 @@ const endpointProviders = endpoints.map(([path, endpoint]): Provider => ({ provi
 		CoreModule,
 	],
 	providers: [
+		EvexAccountService,
 		GetterService,
 		ApiLoggerService,
 		...endpointProviders,
 	],
 	exports: [
+		EvexAccountService,
 		...endpointProviders,
 	],
 })

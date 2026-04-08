@@ -321,6 +321,7 @@ import type {
 	EndpointRequest,
 	EndpointResponse,
 	EndpointsResponse,
+	EvexAccountCompleteRequest,
 	FederationFollowersRequest,
 	FederationFollowersResponse,
 	FederationFollowingRequest,
@@ -871,6 +872,8 @@ export type Endpoints = {
 	'emojis': { req: EmptyRequest; res: EmojisResponse };
 	'endpoint': { req: EndpointRequest; res: EndpointResponse };
 	'endpoints': { req: EmptyRequest; res: EndpointsResponse };
+	'evex-account/complete': { req: EvexAccountCompleteRequest; res: EmptyResponse };
+	'evex-account/start': { req: EmptyRequest; res: EmptyResponse };
 	'export-custom-emojis': { req: EmptyRequest; res: EmptyResponse };
 	'federation/followers': { req: FederationFollowersRequest; res: FederationFollowersResponse };
 	'federation/following': { req: FederationFollowingRequest; res: FederationFollowingResponse };

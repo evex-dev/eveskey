@@ -194,6 +194,8 @@ export * as 'emoji' from './endpoints/emoji.js';
 export * as 'emojis' from './endpoints/emojis.js';
 export * as 'endpoint' from './endpoints/endpoint.js';
 export * as 'endpoints' from './endpoints/endpoints.js';
+export * as 'evex-account/complete' from './endpoints/evex-account/complete.js';
+export * as 'evex-account/start' from './endpoints/evex-account/start.js';
 export * as 'export-custom-emojis' from './endpoints/export-custom-emojis.js';
 export * as 'federation/followers' from './endpoints/federation/followers.js';
 export * as 'federation/following' from './endpoints/federation/following.js';

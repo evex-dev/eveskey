@@ -5,6 +5,26 @@ SPDX-License-Identifier: AGPL-3.0-only
 
 <template>
 <div :class="$style.signinRoot">
+	<div v-if="page === 'input'" :class="[$style.externalAuth, '_gaps_m']">
+		<div :class="$style.header" class="_gaps_s">
+			<div :class="$style.icon">
+				<i class="ti ti-login-2"></i>
+			</div>
+			<div :class="$style.title">{{ i18n.ts.evexAccount.title }}</div>
+		</div>
+		<MkButton gradate rounded large :disabled="waiting" style="width: 100%;" @click="onEvexAccountLogin">
+			<template v-if="waiting && doingEvexLogin">
+				<MkLoading :em="true" :colored="false"/>
+			</template>
+			<template v-else>{{ i18n.ts.evexAccount.signIn }}</template>
+		</MkButton>
+		<div :class="$style.caption">
+			{{ i18n.ts.evexAccount.signInDescription }}
+		</div>
+
+		<hr :class="$style.hr">
+	</div>
+
 	<Transition
 		mode="out-in"
 		:enterActiveClass="$style.transition_enterActive"
@@ -76,11 +96,13 @@ import { showSuspendedDialog } from '@/utility/show-suspended-dialog.js';
 import { i18n } from '@/i18n.js';
 import * as os from '@/os.js';
 
+import MkButton from '@/components/MkButton.vue';
 import XInput from '@/components/MkSignin.input.vue';
 import XPassword from '@/components/MkSignin.password.vue';
 import XTotp from '@/components/MkSignin.totp.vue';
 import XPasskey from '@/components/MkSignin.passkey.vue';
 import { login } from '@/accounts.js';
+import { startEvexAccountFlow } from '@/utility/evex-account.js';
 
 const emit = defineEmits<{
 	(ev: 'login', v: Misskey.entities.SigninFlowResponse & { finished: true }): void;
@@ -100,12 +122,44 @@ const props = withDefaults(defineProps<{
 
 const page = ref<'input' | 'password' | 'totp' | 'passkey'>('input');
 const waiting = ref(false);
+const doingEvexLogin = ref(false);
 
 const passwordPageEl = useTemplateRef('passwordPageEl');
 const needCaptcha = ref(false);
 
 const userInfo = ref<null | Misskey.entities.UserDetailed>(null);
 const password = ref('');
+
+//#region Evex Account
+async function onEvexAccountLogin() {
+	waiting.value = true;
+	doingEvexLogin.value = true;
+
+	try {
+		const res = await startEvexAccountFlow();
+		if (!res) return;
+
+		const flow = {
+			finished: true,
+			id: res.id,
+			i: res.token,
+		} satisfies Misskey.entities.SigninFlowResponse & { finished: true };
+
+		emit('login', flow);
+		await onLoginSucceeded(flow);
+	} catch (err) {
+		console.error(err);
+		os.alert({
+			type: 'error',
+			title: i18n.ts.loginFailed,
+			text: err instanceof Error ? err.message : JSON.stringify(err),
+		});
+	} finally {
+		waiting.value = false;
+		doingEvexLogin.value = false;
+	}
+}
+//#endregion
 
 //#region Passkey Passwordless
 const credentialRequest = shallowRef<CredentialRequestOptions | null>(null);
@@ -408,6 +462,46 @@ onBeforeUnmount(() => {
 	overflow-x: clip;
 
 	position: relative;
+}
+
+.externalAuth {
+	padding: 32px;
+	padding-bottom: 0;
+}
+
+.header {
+	text-align: center;
+	display: grid;
+	gap: 12px;
+}
+
+.icon {
+	width: 56px;
+	height: 56px;
+	margin: 0 auto;
+	border-radius: 50%;
+	display: grid;
+	place-items: center;
+	background: var(--MI_THEME-accentedBg);
+	color: var(--MI_THEME-accent);
+	font-size: 24px;
+}
+
+.title {
+	font-size: 1.2em;
+	font-weight: 700;
+}
+
+.caption {
+	opacity: 0.8;
+	text-align: center;
+	font-size: 0.9em;
+}
+
+.hr {
+	border: none;
+	border-top: solid 1px var(--MI_THEME-divider);
+	margin: 24px 0;
 }
 
 .waitingRoot {

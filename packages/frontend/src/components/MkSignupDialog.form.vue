@@ -9,6 +9,23 @@ SPDX-License-Identifier: AGPL-3.0-only
 		<i class="ti ti-user-edit"></i>
 	</div>
 	<div class="_spacer" style="--MI_SPACER-min: 20px; --MI_SPACER-max: 32px;">
+		<div :class="[$style.externalAuth, '_gaps_m']">
+			<div :class="$style.text">
+				{{ i18n.ts.evexAccount.signupDescription }}
+			</div>
+			<MkButton type="button" gradate large rounded :disabled="submitting" style="margin: 0 auto;" @click="onEvexSignup">
+				<template v-if="submitting && doingEvexSignup">
+					<MkLoading :em="true" :colored="false"/>
+				</template>
+				<template v-else>{{ i18n.ts.evexAccount.goToSignup }}</template>
+			</MkButton>
+			
+			<div :class="$style.hrContainer">
+				<hr :class="$style.hr">
+				<span :class="$style.hrText">{{ i18n.ts.or }}</span>
+			</div>
+		</div>
+
 		<form class="_gaps_m" autocomplete="new-password" @submit.prevent="onSubmit">
 			<MkInput v-if="instance.disableRegistration" v-model="invitationCode" type="text" :spellcheck="false" required data-cy-signup-invitation-code>
 				<template #label>{{ i18n.ts.invitationCode }}</template>
@@ -68,7 +85,7 @@ SPDX-License-Identifier: AGPL-3.0-only
 			<MkCaptcha v-if="instance.enableTurnstile" ref="turnstile" v-model="turnstileResponse" :class="$style.captcha" provider="turnstile" :sitekey="instance.turnstileSiteKey"/>
 			<MkCaptcha v-if="instance.enableTestcaptcha" ref="testcaptcha" v-model="testcaptchaResponse" :class="$style.captcha" provider="testcaptcha" :sitekey="null"/>
 			<MkButton type="submit" :disabled="shouldDisableSubmitting" large gradate rounded data-cy-signup-submit style="margin: 0 auto;">
-				<template v-if="submitting">
+				<template v-if="submitting && !doingEvexSignup">
 					<MkLoading :em="true" :colored="false"/>
 				</template>
 				<template v-else>{{ i18n.ts.start }}</template>
@@ -92,6 +109,7 @@ import { misskeyApi } from '@/utility/misskey-api.js';
 import { instance } from '@/instance.js';
 import { i18n } from '@/i18n.js';
 import { login } from '@/accounts.js';
+import { startEvexAccountFlow } from '@/utility/evex-account.js';
 
 const props = withDefaults(defineProps<{
 	autoSet?: boolean;
@@ -122,6 +140,7 @@ const emailState = ref<null | 'wait' | 'ok' | 'unavailable:used' | 'unavailable:
 const passwordStrength = ref<'' | 'low' | 'medium' | 'high'>('');
 const passwordRetypeState = ref<null | 'match' | 'not-match'>(null);
 const submitting = ref<boolean>(false);
+const doingEvexSignup = ref<boolean>(false);
 const hCaptchaResponse = ref<string | null>(null);
 const mCaptchaResponse = ref<string | null>(null);
 const reCaptchaResponse = ref<string | null>(null);
@@ -142,6 +161,37 @@ const shouldDisableSubmitting = computed((): boolean => {
 		usernameState.value !== 'ok' ||
 		passwordRetypeState.value !== 'match';
 });
+
+//#region Evex Account
+async function onEvexSignup(): Promise<void> {
+	if (submitting.value) return;
+	submitting.value = true;
+	doingEvexSignup.value = true;
+
+	try {
+		const res = await startEvexAccountFlow();
+		if (!res) return;
+
+		// 既存の型定義に合わせるための変換
+		const signupRes = res as Misskey.entities.SignupResponse;
+		emit('signup', signupRes);
+
+		if (props.autoSet) {
+			await login(res.token);
+		}
+	} catch (err) {
+		console.error(err);
+		os.alert({
+			type: 'error',
+			title: i18n.ts.somethingHappened,
+			text: err instanceof Error ? err.message : JSON.stringify(err),
+		});
+	} finally {
+		submitting.value = false;
+		doingEvexSignup.value = false;
+	}
+}
+//#endregion
 
 function getPasswordStrength(source: string): number {
 	let strength = 0;
@@ -255,6 +305,7 @@ function onChangePasswordRetype(): void {
 async function onSubmit(): Promise<void> {
 	if (submitting.value) return;
 	submitting.value = true;
+	doingEvexSignup.value = false;
 
 	const signupPayload: Misskey.entities.SignupRequest = {
 		username: username.value,
@@ -326,6 +377,38 @@ function onSignupApiError() {
 	font-size: 26px;
 	background-color: var(--MI_THEME-accentedBg);
 	color: var(--MI_THEME-accent);
+}
+
+.externalAuth {
+	padding: 0 32px;
+	margin-bottom: 24px;
+}
+
+.text {
+	text-align: center;
+}
+
+.hrContainer {
+	position: relative;
+	margin: 32px 0;
+	text-align: center;
+}
+
+.hr {
+	border: none;
+	border-top: solid 1px var(--MI_THEME-divider);
+}
+
+.hrText {
+	position: absolute;
+	top: 50%;
+	left: 50%;
+	transform: translate(-50%, -50%);
+	padding: 0 16px;
+	background: var(--MI_THEME-panel); // 背景色に合わせて調整
+	color: var(--MI_THEME-fg);
+	font-size: 0.9em;
+	opacity: 0.7;
 }
 
 .captcha {
