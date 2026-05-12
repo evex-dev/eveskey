@@ -5647,6 +5647,10 @@ export interface Locale extends ILocale {
      * 設定項目はありません
      */
     "nothingToConfigure": string;
+    /**
+     * リノート先のチャンネルを見る
+     */
+    "viewRenotedChannel": string;
     "_imageEditing": {
         "_vars": {
             /**
@@ -8173,6 +8177,10 @@ export interface Locale extends ILocale {
              * 翻訳機能の利用
              */
             "canUseTranslator": string;
+            /**
+             * チャンネルの作成
+             */
+            "canCreateChannel": string;
             /**
              * アイコンデコレーションの最大取付個数
              */
