@@ -1408,6 +1408,8 @@ frame: "Çerçeve"
 presets: "Ön ayar"
 zeroPadding: "Sıfır doldurma"
 nothingToConfigure: "Ayarlar seçeneği bulunmamaktadır."
+viewRenotedChannel: "Show renoted channel"
+previewingThemeRestore: "Geri yükle"
 _imageEditing:
   _vars:
     caption: "Dosya başlığı"
