@@ -7,11 +7,11 @@ import * as fs from 'node:fs';
 import * as path from 'node:path';
 import fastifyStatic from '@fastify/static';
 import Fastify, { type FastifyInstance } from 'fastify';
-import { describe, expect, test } from '@jest/globals';
+import { describe, expect, test, beforeAll, afterAll, afterEach } from 'vitest';
 import sharp from 'sharp';
 import { DataSource, type Repository } from 'typeorm';
 import { initTestDb, randomString } from '../../utils.js';
-import type { AiService } from '@/core/AiService.js';
+import type { SensitiveMediaDetectionService } from '@/core/SensitiveMediaDetectionService.js';
 import { DownloadService } from '@/core/DownloadService.js';
 import { FileInfoService } from '@/core/FileInfoService.js';
 import { HttpRequestService } from '@/core/HttpRequestService.js';
@@ -147,10 +147,11 @@ describe('FileServerService', () => {
 		driveFilesRepository = db.getRepository(MiDriveFile);
 
 		const loggerService = new LoggerService();
-		const aiService = {
+		const sensitiveMediaDetectionService = {
 			detectSensitive: async () => null,
-		} as unknown as AiService;
-		const fileInfoService = new FileInfoService(aiService, loggerService);
+			detectSensitiveMany: async (sources: Buffer[]) => sources.map(() => null),
+		} as unknown as SensitiveMediaDetectionService;
+		const fileInfoService = new FileInfoService(sensitiveMediaDetectionService, loggerService);
 		const httpRequestService = new HttpRequestService(config);
 		const downloadService = new DownloadService(config, httpRequestService, loggerService);
 		const imageProcessingService = new ImageProcessingService();
@@ -296,7 +297,7 @@ describe('FileServerService', () => {
 			});
 
 			expect(res.statusCode).toBe(404);
-			expect(res.headers['cache-control']).toBe('max-age=86400');
+			expect(res.headers['cache-control']).toBe('public, max-age=0');
 		});
 
 		test('GET /files/:key 画像配信ヘッダを検証する', async () => {
@@ -522,7 +523,7 @@ describe('FileServerService', () => {
 			expect(res.statusCode).toBe(206);
 			expect(res.headers['content-range']).toBe(`bytes 0-3/${dummyBuffer.length}`);
 			expect(res.headers['accept-ranges']).toBe('bytes');
-			expect(res.headers['content-length']).toBe(String(dummyBuffer.length));
+			expect(res.headers['content-length']).toBe('4');
 			expect(res.headers['content-type']).toBe('image/png');
 			expect(res.headers['cache-control']).toBe('max-age=31536000, immutable');
 		});
