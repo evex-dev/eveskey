@@ -9,13 +9,13 @@ import { basename, isAbsolute } from 'node:path';
 import { randomUUID } from 'node:crypto';
 import { inspect } from 'node:util';
 import WebSocket, { ClientOptions } from 'ws';
-import fetch, { File, RequestInit, type Headers } from 'node-fetch';
+import fetch, { Blob, FormData } from 'node-fetch';
+import type { RequestInit, Headers, Response } from 'node-fetch';
 import * as htmlParser from 'node-html-parser';
 import { DataSource } from 'typeorm';
-import { type Response } from 'node-fetch';
 import Fastify from 'fastify';
-import { entities } from '../src/postgres.js';
-import { loadConfig } from '../src/config.js';
+import { entities } from '@/postgres.js';
+import { loadConfig } from '@/config.js';
 import type * as misskey from 'misskey-js';
 import { DEFAULT_POLICIES } from '@/core/RoleService.js';
 import { validateContentTypeSetAsActivityPub } from '@/core/activitypub/misc/validator.js';
@@ -368,13 +368,13 @@ export const uploadUrl = async (user: UserToken, url: string): Promise<misskey.e
 	return catcher;
 };
 
-export function connectStream<C extends keyof misskey.Channels>(user: UserToken, channel: C, listener: (message: Record<string, any>) => any, params?: misskey.Channels[C]['params']): Promise<WebSocket> {
+export function connectStream<C extends keyof misskey.Channels>(user: UserToken | null, channel: C, listener: (message: Record<string, any>) => any, params?: misskey.Channels[C]['params']): Promise<WebSocket> {
 	return new Promise((res, rej) => {
 		const url = new URL(`ws://127.0.0.1:${port}/streaming`);
 		const options: ClientOptions = {};
-		if (user.bearer) {
+		if (user?.bearer) {
 			options.headers = { Authorization: `Bearer ${user.token}` };
-		} else {
+		} else if (user) {
 			url.searchParams.set('i', user.token);
 		}
 		const ws = new WebSocket(url, options);
